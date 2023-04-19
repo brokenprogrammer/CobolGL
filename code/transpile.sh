@@ -1,0 +1,1 @@
+cobc -C -x -static -free -fwinmain hello.cbl
