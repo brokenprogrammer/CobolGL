@@ -92,7 +92,11 @@
            
            call "showPointer" using by reference gl-dummy-handle
            call "showPointer" using by reference NULL
-                      
+             
+          if ex-func = null
+             display 'A null check was performed and ex-func is null'
+          end-if
+
            call "GetDC" using by value gl-dummy-handle
                               returning gl-dummy-hdc
            call "showPointer" using by reference gl-dummy-hdc
@@ -129,7 +133,6 @@
            call "wglGetProcAddress" using by reference
              z"wglGetExtensionsStringARB"
                                        returning ex-func
-           
            
            call "showPointer" using by reference ex-func
 
