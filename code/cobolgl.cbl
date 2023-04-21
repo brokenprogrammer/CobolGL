@@ -9,7 +9,8 @@
        01 temp-ptr usage pointer.
        01 temp-ptr-x usage program-pointer.
        01 temp-value usage int.
-
+       
+       local-storage section.
        01 wnd-class-ex.
          02 style          usage binary-int unsigned.
          02 wnd-class-pad  usage binary-int unsigned.
@@ -22,16 +23,16 @@
          02 h-brush        usage pointer.
          02 menu-name      usage pointer.
          02 class-name     usage pointer.
-
-       local-storage section.
        
+       01 ws-overlappedwindow usage binary-int unsigned.
+       01 global-hwnd usage pointer.
+
        01 szClassName    pic x(22) value z"cobol_gl_window_class".
        01 szWindowName   pic x(10) value z"My-Window".
        01 szWindowTitle  pic x(8)  value z"CobolGL".
        
        01 mresult        pic x(4) comp-5.
        01 last-error     usage uns-short.
-       01 hwnd           usage HANDLE.
        01 msg usage uns-int.
 
        01 gl-dummy-int      usage int.
@@ -80,7 +81,7 @@
 
        procedure division.
            perform init
-           perform GetWGLFunctions
+      *    perform GetWGLFunctions
            perform SetupWindow
            stop run
            .
@@ -207,7 +208,6 @@
            set temp-ptr-x to entry "wndproc"
            set lpfn-wnd-proc to temp-ptr-x
            
-           display temp-value
            call "sizeCheck"
            display function byte-length(h-icon)
            display function byte-length(uns-int)
@@ -234,11 +234,11 @@
            perform fatal-error
            
            display 'creating window'
-           display h-instance
-           move 0 to gl-dummy-handle
-           call 'CreateWindowExA' using by value 0
+           
+           set temp-ptr to address of szWindowTitle
+           call 'CreateWindowExA' using by value 0 
                                    by value class-name
-                                   by reference z"DummyWindow"
+                                   by value temp-ptr
                                    by value ws-overlappedwindow
                                    by value cw-usedefault
                                    by value cw-usedefault
@@ -246,9 +246,10 @@
                                    by value cw-usedefault
                                    by value 0
                                    by value 0
-                                   by reference h-instance
+                                   by value h-instance
                                    by value 0
-                                   returning hwnd
+                             returning global-hwnd
+
       *    set temp-ptr to address of szClassName
       *    call "CreateWindowExA" using by value 0
       *                           by value szClassName
@@ -265,10 +266,11 @@
       *                           returning hwnd
       *call "showPointer" using by reference gl-dummy-handle
       *display gl-dummy-handle
+       
        perform fatal-error
        
-       call "ShowWindow" using by value hwnd by value 5
-       call "UpdateWindow" using by value hwnd
+       call "ShowWindow" using by value global-hwnd by value 5
+       call "UpdateWindow" using by value global-hwnd
        
        perform fatal-error
 
@@ -281,7 +283,7 @@
            .
        message-loop.
          call "PeekMessageA" using by reference msg
-                                       by value hwnd
+                                       by value global-hwnd
                                        by value 0
                                        by value 0
                                        by value 1
