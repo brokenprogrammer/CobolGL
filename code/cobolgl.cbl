@@ -81,7 +81,7 @@
 
        procedure division.
            perform init
-      *    perform GetWGLFunctions
+           perform GetWGLFunctions
            perform SetupWindow
            stop run
            .
