@@ -10,3 +10,4 @@
        77 W32-DWORD      pic 9(18)     comp-5 is typedef.
        77 w32-HANDLE     pointer is typedef.
        77 w32-HINSTANCE  pointer is typedef.
+       

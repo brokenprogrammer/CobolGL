@@ -1,1 +1,1 @@
-cobc -x -free --static -fwinmain -luser32 -lgdi32 -lopengl32  -fno-gen-c-decl-static-call  cobolgl.cbl test.c
+cobc -x --static -fwinmain -luser32 -lgdi32 -lopengl32  -fno-gen-c-decl-static-call  cobolgl.cbl test.c

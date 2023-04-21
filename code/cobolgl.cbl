@@ -4,34 +4,51 @@
        data division.
        working-storage section.
        copy windows.
+       copy windows-constants.
 
-       01 test-var usage char.
-       
+       01 temp-ptr usage pointer.
+       01 temp-ptr-x usage program-pointer.
+       01 temp-value usage int.
+
+       01 wnd-class-ex.
+         02 style          usage binary-int unsigned.
+         02 wnd-class-pad  usage binary-int unsigned.
+         02 lpfn-wnd-proc  usage pointer.
+         02 cb-cls-extra   usage binary-int.
+         02 cb-wnd-extra   usage binary-int.
+         02 h-instance     usage pointer.
+         02 h-icon         usage pointer.
+         02 h-cursor       usage pointer.
+         02 h-brush        usage pointer.
+         02 menu-name      usage pointer.
+         02 class-name     usage pointer.
+
        local-storage section.
-       01 wm-quit usage uns-int value 12.
-       01 cs-vredraw usage uns-int value 1.
-       01 cs-hredraw usage uns-int value 2.
+       
+       01 szClassName    pic x(22) value z"cobol_gl_window_class".
+       01 szWindowName   pic x(10) value z"My-Window".
+       01 szWindowTitle  pic x(8)  value z"CobolGL".
+       
+       01 mresult        pic x(4) comp-5.
+       01 last-error     usage uns-short.
 
-       01 ws-overlapped       usage W32-DWORD value h"00000000".
-       01 ws-caption          usage W32-DWORD value h"00C00000".
-       01 ws-sysmenu          usage W32-DWORD value h"00080000".
-       01 ws-thickframe       usage W32-DWORD value h"00040000".
-       01 ws-minimizebox      usage W32-DWORD value h"00020000".
-       01 ws-maximizebox      usage W32-DWORD value h"00010000".
-       01 ws-overlappedwindow usage uns-long.
 
-       01 cw-usedefault       usage int       value h"80000000".
-      
+
        01 gl-dummy-int      usage int.
        01 gl-dummy-handle   usage HANDLE.
        01 gl-dummy-hdc      usage HANDLE.
-       01 gl-pixel-format usage int.
-       01 gl-ok usage int.
+       01 gl-pixel-format   usage int.
+       01 gl-ok             usage int.
        01 gl-set-p-format-r usage int.
-       01 gl-rc usage HANDLE.
+       01 gl-rc             usage HANDLE.
 
-       01 ex-func usage pointer.
-       01 ex-long-string pic x(4096).
+       01 gl-get-ext-func   usage pointer.
+       01 gl-ext-string     pic x(4096).
+
+       01 gl-choose-pixel-format-func   usage pointer.
+       01 gl-create-context-attribs-func   usage pointer.
+       01 gl-swap-interval-func          usage pointer.
+       
 
        01 gl-pixel-descriptor.
          05 gl-pd-size usage int.
@@ -64,6 +81,7 @@
        procedure division.
            perform init
            perform GetWGLFunctions
+           perform SetupWindow
            stop run
            .
        init.
@@ -73,7 +91,10 @@
              ws-thickframe b-or
              ws-minimizebox b-or
              ws-maximizebox
+           
 
+           compute style = cs-vredraw + cs-hredraw
+         
            .
        GetWGLFunctions.
            call 'CreateWindowExA' using by value 0
@@ -92,11 +113,7 @@
            
            call "showPointer" using by reference gl-dummy-handle
            call "showPointer" using by reference NULL
-             
-          if ex-func = null
-             display 'A null check was performed and ex-func is null'
-          end-if
-
+           
            call "GetDC" using by value gl-dummy-handle
                               returning gl-dummy-hdc
            call "showPointer" using by reference gl-dummy-hdc
@@ -132,9 +149,134 @@
 
            call "wglGetProcAddress" using by reference
              z"wglGetExtensionsStringARB"
-                                       returning ex-func
+                                       returning gl-get-ext-func
            
-           call "showPointer" using by reference ex-func
+           if gl-get-ext-func = null
+             display 'OpenGL does not support extensions string'
+             stop run
+           end-if
+
+           call "wglGetProcAddress" using by reference
+             z"wglChoosePixelFormatARB"
+                               returning gl-choose-pixel-format-func
+           
+           if gl-choose-pixel-format-func = null
+             display 'OpenGL does not support required extension'
+             stop run
+           end-if
+
+           call "wglGetProcAddress" using by reference
+             z"wglCreateContextAttribsARB"
+                               returning gl-create-context-attribs-func
+           
+           if gl-create-context-attribs-func = null
+             display 'OpenGL does not support required extension'
+             stop run
+           end-if
+
+           call "wglGetProcAddress" using by reference
+             z"wglSwapIntervalEXT"
+                               returning gl-swap-interval-func
+           
+           if gl-swap-interval-func = null
+             display 'OpenGL does not support required extension'
+             stop run
+           end-if
+
+           call "wglMakeCurrent" using by reference null
+                                       by reference null
+           call "wglDeleteContext" using by value gl-rc
+           call "ReleaseDC" using by value gl-dummy-handle
+                                  by value gl-dummy-hdc
+           call "DestroyWindow" using by value gl-dummy-handle
+           
+           display 'OpenGL setup was completed!'
+           .
+
+       SetupWindow.
+           move 3 to style
+           move 0 to cb-wnd-extra
+           move 0 to cb-cls-extra
+           move null to h-icon
+           move null to h-cursor
+           move null to h-brush
+           
+           set menu-name     to address of szWindowName
+           set class-name    to address of szClassName
+           
+           set temp-ptr-x to entry "wndproc"
+           set lpfn-wnd-proc to temp-ptr-x
+           
+           display temp-value
+           call "sizeCheck"
+           display function byte-length(h-icon)
+           display function byte-length(uns-int)
+           display function byte-length(style)
+           display function byte-length(lpfn-wnd-proc)
+           display function byte-length(wnd-class-ex)
+
+           display 'Setting up Window class'
+           display style
+           
+           call "GetModuleHandleA" using by value 0
+                              returning h-instance
+           
+           call "printWndClass" using reference wnd-class-ex
+           call "RegisterClassA" using by reference wnd-class-ex
+               returning mresult
+
+           if mresult = 0
+               display 'Failed to register class'
+               perform fatal-error
+               stop run
+           end-if
+
+           
 
            .
+       fatal-error.
+           call "GetLastError"
+             returning last-error.
+           
+           display last-error
+       .
        end program cobolgl.
+
+       
+       identification division.
+       program-id. wndproc.
+       
+       data division.
+       working-storage section.
+       copy windows.
+       copy windows-constants.
+
+
+       local-storage section.
+
+       01 last-error usage uns-short.
+
+       linkage section.
+       01 hwnd usage pointer.
+       01 msg usage uns-int.
+       01 mp1 usage uns-int.
+       01 mp2 usage uns-int.
+
+       procedure division using by value hwnd
+                                by value msg
+                                by value mp1
+                                by value mp2.             
+           evaluate msg
+               when wm-quit
+                 stop run
+               when other
+                   call "DefWindowProcA" using by value hwnd
+                                                      by value msg
+                                                      by value mp1
+                                                      by value mp2
+           end-evaluate
+
+           call "GetLastError"
+             returning last-error
+           .
+       end program wndproc.
