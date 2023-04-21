@@ -31,8 +31,8 @@
        
        01 mresult        pic x(4) comp-5.
        01 last-error     usage uns-short.
-
-
+       01 hwnd           usage HANDLE.
+       01 msg usage uns-int.
 
        01 gl-dummy-int      usage int.
        01 gl-dummy-handle   usage HANDLE.
@@ -230,9 +230,68 @@
                perform fatal-error
                stop run
            end-if
-
+           display mresult
+           perform fatal-error
            
+           display 'creating window'
+           display h-instance
+           move 0 to gl-dummy-handle
+           call 'CreateWindowExA' using by value 0
+                                   by value class-name
+                                   by reference z"DummyWindow"
+                                   by value ws-overlappedwindow
+                                   by value cw-usedefault
+                                   by value cw-usedefault
+                                   by value cw-usedefault
+                                   by value cw-usedefault
+                                   by value 0
+                                   by value 0
+                                   by reference h-instance
+                                   by value 0
+                                   returning hwnd
+      *    set temp-ptr to address of szClassName
+      *    call "CreateWindowExA" using by value 0
+      *                           by value szClassName
+      *                           by value z"CobolGL"
+      *                           by value ws-overlappedwindow
+      *                           by value cw-usedefault
+      *                           by value cw-usedefault
+      *                           by value cw-usedefault
+      *                           by value cw-usedefault
+      *                           by value 0
+      *                           by value 0
+      *                           by reference h-instance
+      *                           by value 0
+      *                           returning hwnd
+      *call "showPointer" using by reference gl-dummy-handle
+      *display gl-dummy-handle
+       perform fatal-error
+       
+       call "ShowWindow" using by value hwnd by value 5
+       call "UpdateWindow" using by value hwnd
+       
+       perform fatal-error
 
+       move 1 to temp-value
+       perform until temp-value = 0
+           perform message-loop
+       end-perform
+       
+       display 'done'
+           .
+       message-loop.
+         call "PeekMessageA" using by reference msg
+                                       by value hwnd
+                                       by value 0
+                                       by value 0
+                                       by value 1
+                                  returning mresult.
+           if mresult = 1
+               call "TranslateMessage" using by reference msg
+           end-if
+           if mresult = 1
+               call "DispatchMessageA" using by reference msg
+           end-if
            .
        fatal-error.
            call "GetLastError"
