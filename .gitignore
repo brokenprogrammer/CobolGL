@@ -5,4 +5,7 @@ windows.cpy
 
 WndProc.cbl
 
-code/cobolgl.exe
+src/CobolGL/bin
+src/CobolGL/obj
+
+
