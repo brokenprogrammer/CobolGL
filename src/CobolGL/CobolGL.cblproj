@@ -1,0 +1,36 @@
+﻿<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <ProjectGuid>{64D583B0-653C-403D-83D6-EED5C34A25CB}</ProjectGuid>
+    <OutputName>CobolGL</OutputName>
+    <OutputType>Library</OutputType>
+    <RootNamespace>CobolGL</RootNamespace>
+    <MFProjectType>Native</MFProjectType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <OutputPath>.\bin\x86\Debug\</OutputPath>
+    <PlatformTarget>x86</PlatformTarget>
+    <ManagedCode>False</ManagedCode>
+    <DebugSymbols>True</DebugSymbols>
+    <MaxError>100</MaxError>
+    <NativeGraphicalApplication>True</NativeGraphicalApplication>
+    <NativeLinkLibs> "C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\um\x86\OpenGL32.Lib"  "C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22000.0\um\x86\Gdi32.Lib" </NativeLinkLibs>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <OutputPath>.\bin\x86\Release\</OutputPath>
+    <PlatformTarget>x86</PlatformTarget>
+    <ManagedCode>False</ManagedCode>
+    <DebugSymbols>False</DebugSymbols>
+    <MaxError>100</MaxError>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Main.cbl" />
+    <Compile Include="WndProc.cbl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="windows-constants.cpy" />
+    <None Include="windows.cpy" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Micro Focus\Visual COBOL\v1.0\MicroFocus.COBOL.targets" />
+</Project>

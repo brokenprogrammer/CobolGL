@@ -1,10 +1,3 @@
-
-Main.cbl
-
-windows.cpy
-
-WndProc.cbl
-
 src/CobolGL/bin
 src/CobolGL/obj
 
